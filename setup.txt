@@ -1,0 +1,30 @@
+##########################################
+#                                        #
+#  OBJECT RECOGNITION PROJECT : setting  #
+#                                        #
+##########################################
+
+
+# Create a Python 3 environment :
+conda create -n objreco_namr python=3.6
+
+# Install packages
+tensorflow
+Cython
+nbconvert #to be able to change kernel in jupyter notebook
+ipykernel
+scikit-learn
+scikit-image
+h5py
+imageio
+
+brew install opencv (for v2 : brew install opencv@2)
+cd ~/anaconda3/envs/objreco_namr/lib/python3.6/site-packages
+ln -s /usr/local/opt/opencv@3/lib/python3.6/site-packages/cv2.so cv2.so
+to test if it work : ipython then import cv2
+(link https://www.pyimagesearch.com/2016/12/19/install-opencv-3-on-macos-with-homebrew-the-easy-way/ or https://www.learnopencv.com/install-opencv3-on-macos/)
+
+
+# Install coco
+cd coco/PythonAPI/
+python setup.py build_ext install

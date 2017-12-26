@@ -1,0 +1,12 @@
+AerialImageDataset/
+
+Mask_RCNN-coco/assets/
+Mask_RCNN-coco/coco/
+Mask_RCNN-coco/images/
+Mask_RCNN-coco/__pycache__/
+Mask_RCNN-coco/mask_rcnn_coco.h5
+
+Mask_RCNN-shapes/__pycache__/
+Mask_RCNN-shapes/mask_rcnn_coco.h5
+
+mask_rcnn/__pycache__/
