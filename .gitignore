@@ -1,0 +1,5 @@
+./AerialImageDataset
+
+./Mask_RCNN-coco/assets
+./Mask_RCNN-coco/coco
+./Mask_RCNN-coco/images
