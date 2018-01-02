@@ -1,8 +1,8 @@
-##########################################
-#                                        #
-#  OBJECT RECOGNITION PROJECT : setting  #
-#                                        #
-##########################################
+########################################### 
+#                                         #
+#  OBJECT RECOGNITION PROJECT : settings  #
+#                                         #
+###########################################
 
 
 # Create a Python 3 environment :
@@ -28,3 +28,51 @@ to test if it work : ipython then import cv2
 # Install coco
 cd coco/PythonAPI/
 python setup.py build_ext install
+
+
+#################
+# Floydhub runs #
+#################
+
+
+# run on floydhub (website example)
+—————————————————————————
+floyd login
+cd <code_folder>
+floyd init <project_name>
+floyd run --gpu --mode jupyter --env tensorflow-1.3
+
+
+# create a floyd dataset
+—————————————————————————
+create a data directory and cd in it
+floyd data init <dataset_name>
+floyd data upload #will create a new version of the dataset
+
+
+# run CaffeRemoteSensing
+—————————————————————————
+cd CaffeRemoteSensing-master
+floyd run --data sohleyer/datasets/aerialimagedataset_train/1:/train --env caffe:py2 --mode jupyter #will create a new job with Python 2.7 and caffe2
+
+
+# compile caffe version of the author
+—————————————————————————
+cp Makefile.config.example Makefile.config
+# Adjust Makefile.config (for example, if using Anaconda Python, or if cuDNN is desired)
+# For me : CPU_ONLY=1
+make all
+make test
+make runtest
+
+
+https://chunml.github.io/ChunML.github.io/project/Installing-Caffe-CPU-Only/
+https://github.com/intel/caffe/wiki/Ubuntu-16.04-or-15.10-Installation-Guide
+https://github.com/nvidia/digits/issues/1107
+http://gear.github.io/2017-03-30-caffe-gpu-installation/
+
+
+# run python
+—————————————————————————
+cd InriaBenchmark
+python predict_folder_script.py
