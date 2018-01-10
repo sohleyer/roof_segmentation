@@ -73,12 +73,18 @@ def apply_mask(image, mask, color, alpha=0.5):
     return image
 
 
-def display_instances(image, boxes, masks, class_ids, class_names,
+def display_instances(image, boxes, instance_labels, instance_idx, class_ids, class_names,
                       scores=None, title="",
                       figsize=(16, 16), ax=None):
     """
     boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
+    ### ORIGINAL ###
     masks: [num_instances, height, width]
+    ### MY VERSION ###
+    instance_labels: [height, width]. Int corresponding to label.
+    instance_idx:
+    (basically, the outputs of label function)
+    ##################
     class_ids: [num_instances]
     class_names: list of class names of the dataset
     scores: (optional) confidence scores for each box
@@ -89,7 +95,7 @@ def display_instances(image, boxes, masks, class_ids, class_names,
     if not N:
         print("\n*** No instances to display *** \n")
     else:
-        assert boxes.shape[0] == masks.shape[-1] == class_ids.shape[0]
+        assert boxes.shape[0] == len(instance_idx) == class_ids.shape[0]
 
     if not ax:
         _, ax = plt.subplots(1, figsize=figsize)
@@ -105,7 +111,8 @@ def display_instances(image, boxes, masks, class_ids, class_names,
     ax.set_title(title)
 
     masked_image = image.astype(np.uint32).copy()
-    for i in range(N):
+    for i, idx in enumerate(instance_idx):
+        print(i)
         color = colors[i]
 
         # Bounding box
@@ -128,7 +135,7 @@ def display_instances(image, boxes, masks, class_ids, class_names,
                 color='w', size=11, backgroundcolor="none")
 
         # Mask
-        mask = masks[:, :, i]
+        mask = (instance_labels==idx)
         masked_image = apply_mask(masked_image, mask, color)
 
         # Mask Polygon

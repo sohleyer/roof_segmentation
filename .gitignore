@@ -7,6 +7,8 @@ Mask_RCNN-coco/__pycache__/
 Mask_RCNN-coco/mask_rcnn_coco.h5
 
 Mask_RCNN-shapes/__pycache__/
-Mask_RCNN-shapes/mask_rcnn_coco.h5
+Mask_RCNN-shapes/data/
+Mask_RCNN-shapes/ipynb_checkpoints/
 
 mask_rcnn/__pycache__/
+mask_rcnn/.ipynb_checkpoints/

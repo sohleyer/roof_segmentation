@@ -41,7 +41,8 @@ import imageio
 # from pycocotools import mask as maskUtils
 
 from config import Config
-# import utils
+import utils
+from skimage.measure import label,regionprops
 # import model as modellib
 
 # Root directory of the project
@@ -82,37 +83,86 @@ class AerialConfig(Config):
 #  Dataset
 ############################################################
 
-class AerialDataset():
-    def load_aerial(self, dataset_dir, subset, return_aerial=False):
+class AerialDataset(utils.Dataset):
+
+    def load_aerial(self, dataset_dir, subset, town_list=None, 
+        image_per_town=None):
         """Load a subset of the AERIAL dataset.
         dataset_dir: The root directory of the AERIAL dataset.
-        subset: What to load (train, val, minival, val35k)
-        class_ids: If provided, only loads images that have the given classes.
-        return_coco: If True, returns the COCO object.
+        subset: What to load (train, val test)
         """
         # Path
-        self.image_dir = os.path.join(dataset_dir, "train/images" if subset == "train"
-                                 else "val/images")
-        self.mask_dir = os.path.join(dataset_dir, "train/gt" if subset == "train"
-                                 else "val/gt")
+        if subset=="train":
+            if town_list is None:
+                town_list = ["austin", "chicago", "kitsap", "tyrol-w", "vienna"]
+            first_image = 1
+            self.image_dir = os.path.join(dataset_dir, "train/images")
+            self.mask_dir = os.path.join(dataset_dir, "train/gt")
+        
+        elif subset=="test":
+            if town_list is None:
+                town_list = ["bellingham", "bloomington", "innsbruck", "sfo", "tyrol-e"]
+            first_image = 1
+            self.image_dir = os.path.join(dataset_dir, "test/images")
+        
+        elif subset=="val":
+            if town_list is None:
+                town_list = ["austin", "chicago", "kitsap", "tyrol-w", "vienna"]
+            first_image = 6
+            self.image_dir = os.path.join(dataset_dir, "train/images")
+            self.mask_dir = os.path.join(dataset_dir, "train/gt")
+        
 
-        self.class_ids=['building', 'not building']
-        self.num_classes=len(self.class_ids)
+        # Add classes
+        self.add_class("aerial", 1, "building")
 
-        self.image_ids = []
-        for file in os.listdir(self.image_dir):
-            if file.endswith(".tif"):   
-                self.image_ids.append(file)
+        # All images or a subset?
+        self.image_names = []
+        if image_per_town is None:
+            image_per_town=36
+        for town in town_list:
+            j=first_image
+            while j<=image_per_town:
+                file = town+str(j)+".tif"
+                if file in os.listdir(self.image_dir):
+                    self.image_names.append(file)
+                    j+=1
 
-        if return_aerial:
-            return self
+        # Add images
+        for i, name in enumerate(self.image_names):
+            self.add_image(
+                "aerial", image_id=i, image_name=name,
+                path=os.path.join(self.image_dir, name),
+                width=5000,
+                height=5000,
+                mask_path=os.path.join(self.mask_dir, name)*(subset=='train'))
 
     def load_image(self, image_id):
-        image_path = os.path.join(self.image_dir, image_id)
-        image_read = imageio.imread(image_path)
+        info = self.image_info[image_id]
+        path = info["path"]
+        image_read = imageio.imread(path)
         return image_read
 
     def load_mask(self, image_id):
-        mask_path = os.path.join(self.mask_dir, image_id)
-        mask_read = imageio.imread(mask_path)
-        return mask_read
+        """Load instance masks for the given image.
+        Returns:
+        masks: A bool array of shape [height, width, instance count] with
+            one mask per instance.
+        full_mask: Full original mask"""
+        info = self.image_info[image_id]
+        mask_path = info["mask_path"]
+        full_mask = imageio.imread(mask_path)
+
+        #create the mask matrix
+        (instance_labels, num_instances) = label(full_mask, return_num =1, connectivity=2)
+
+        """ TODO: create a condition on the regions areas """
+        props = regionprops(instance_labels)
+        areas = np.array([props[i].area for i in range(num_instances)])
+        instance_idx = list(areas.argsort()[-3:][::-1] + 1) #prop starts at 0 and idx at 1
+        
+        instance_labels_soft = np.where(np.isin(instance_labels, instance_idx), instance_labels, 0)
+        num_instances_soft=len(instance_idx)
+        class_ids = np.ones(num_instances_soft)  
+
+        return (instance_labels_soft, instance_idx), class_ids.astype(np.int32), full_mask

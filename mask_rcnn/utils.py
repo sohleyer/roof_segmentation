@@ -25,28 +25,36 @@ import skimage.io
 #  Bounding Boxes
 ############################################################
 
-def extract_bboxes(mask):
+def extract_bboxes(instance_labels, instance_idx):
     """Compute bounding boxes from masks.
+    ### ORIGINAL ###
     mask: [height, width, num_instances]. Mask pixels are either 255 or 0.
+    ### MY VERSION ###
+    instance_labels: [height, width]. Int corresponding to label.
+    instance_idx: instances label to consider
+    (basically, the outputs of label function)
 
     Returns: bbox array [num_instances, (y1, x1, y2, x2)].
     """
-    boxes = np.zeros([mask.shape, 4], dtype=np.int32)
+    num_instances = len(instance_idx)
+    boxes = np.zeros([num_instances, 4], dtype=np.int32)
 
-    # Bounding box.
-    horizontal_indicies = np.where(np.any(mask, axis=0))[0]
-    vertical_indicies = np.where(np.any(mask, axis=255))[0]
-    if horizontal_indicies.shape[0]:
-        x1, x2 = horizontal_indicies[[0, -1]]
-        y1, y2 = vertical_indicies[[0, -1]]
-        # x2 and y2 should not be part of the box. Increment by 1.
-        x2 += 1
-        y2 += 1
-    else:
-        # No mask for this instance. Might happen due to
-        # resizing or cropping. Set bbox to zeros
-        x1, x2, y1, y2 = 0, 0, 0, 0
-    boxes[i] = np.array([y1, x1, y2, x2])
+    for i, idx in enumerate(instance_idx):
+        m = (instance_labels==idx)
+        # Bounding box.
+        horizontal_indicies = np.where(np.any(m, axis=0))[0]
+        vertical_indicies = np.where(np.any(m, axis=1))[0]
+        if horizontal_indicies.shape[0]:
+            x1, x2 = horizontal_indicies[[0, -1]]
+            y1, y2 = vertical_indicies[[0, -1]]
+            # x2 and y2 should not be part of the box. Increment by 1.
+            x2 += 1
+            y2 += 1
+        else:
+            # No mask for this instance. Might happen due to
+            # resizing or cropping. Set bbox to zeros
+            x1, x2, y1, y2 = 0, 0, 0, 0
+        boxes[i] = np.array([y1, x1, y2, x2])
     return boxes.astype(np.int32)
 
 
@@ -361,68 +369,21 @@ class Dataset(object):
 
 def resize_image(image, min_dim=None, max_dim=None, padding=False):
     """
-    Resizes an image keeping the aspect ratio.
-
-    min_dim: if provided, resizes the image such that it's smaller
-        dimension == min_dim
-    max_dim: if provided, ensures that the image longest side doesn't
-        exceed this value.
-    padding: If true, pads image with zeros so it's size is max_dim x max_dim
-
-    Returns:
-    image: the resized image
-    window: (y1, x1, y2, x2). If max_dim is provided, padding might
-        be inserted in the returned image. If so, this window is the
-        coordinates of the image part of the full image (excluding
-        the padding). The x2, y2 pixels are not included.
-    scale: The scale factor used to resize the image
-    padding: Padding added to the image [(top, bottom), (left, right), (0, 0)]
+    Take the upper left corner of a size 1024x1024 to be able to enter the network.
     """
-    # Default window (y1, x1, y2, x2) and default scale == 1.
-    h, w = image.shape[:2]
-    window = (0, 0, h, w)
-    scale = 1
-
-    # Scale?
-    if min_dim:
-        # Scale up but not down
-        scale = max(1, min_dim / min(h, w))
-    # Does it exceed max dim?
-    if max_dim:
-        image_max = max(h, w)
-        if round(image_max * scale) > max_dim:
-            scale = max_dim / image_max
-    # Resize image and mask
-    if scale != 1:
-        image = scipy.misc.imresize(
-            image, (round(h * scale), round(w * scale)))
-    # Need padding?
-    if padding:
-        # Get new height and width
-        h, w = image.shape[:2]
-        top_pad = (max_dim - h) // 2
-        bottom_pad = max_dim - h - top_pad
-        left_pad = (max_dim - w) // 2
-        right_pad = max_dim - w - left_pad
-        padding = [(top_pad, bottom_pad), (left_pad, right_pad), (0, 0)]
-        image = np.pad(image, padding, mode='constant', constant_values=0)
-        window = (top_pad, left_pad, h + top_pad, w + left_pad)
-    return image, window, scale, padding
+    image_resized = image[:1024,:1024]
+    window=None
+    scale=None
+    padding=None 
+    return image_resized, window, scale, padding
 
 
 def resize_mask(mask, scale, padding):
-    """Resizes a mask using the given scale and padding.
-    Typically, you get the scale and padding from resize_image() to
-    ensure both, the image and the mask, are resized consistently.
-
-    scale: mask scaling factor
-    padding: Padding to add to the mask in the form
-            [(top, bottom), (left, right), (0, 0)]
     """
-    h, w = mask.shape[:2]
-    mask = scipy.ndimage.zoom(mask, zoom=[scale, scale, 1], order=0)
-    mask = np.pad(mask, padding, mode='constant', constant_values=0)
-    return mask
+    Take the upper left corner of a size 1024x1024 to be able to enter the network.
+    """
+    mask_resized = mask[:1024,:1024] 
+    return mask_resized
 
 
 def minimize_mask(bbox, mask, mini_shape):
