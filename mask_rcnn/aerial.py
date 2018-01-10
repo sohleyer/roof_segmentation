@@ -143,7 +143,7 @@ class AerialDataset(utils.Dataset):
         image_read = imageio.imread(path)
         return image_read
 
-    def load_mask(self, image_id):
+    def load_mask(self, image_id, mode="uppest"):
         """Load instance masks for the given image.
         Returns:
         masks: A bool array of shape [height, width, instance count] with
@@ -158,9 +158,15 @@ class AerialDataset(utils.Dataset):
 
         """ TODO: create a condition on the regions areas """
         props = regionprops(instance_labels)
-        areas = np.array([props[i].area for i in range(num_instances)])
-        instance_idx = list(areas.argsort()[-3:][::-1] + 1) #prop starts at 0 and idx at 1
-        
+        if mode == "uppest":
+            uppest_area_idx = [i+1 for i in range(num_instances) if props[i].centroid[0]<1024 and props[i].centroid[1]<1024]
+            instance_idx =  uppest_area_idx
+
+        elif mode == "biggest":
+            areas = np.array([props[i].area for i in range(num_instances)])
+            biggest_areas_idx = list(areas.argsort()[-4:][::-1] + 1)#prop starts at 0 and idx at 1
+            instance_idx =  biggest_areas_idx
+      
         instance_labels_soft = np.where(np.isin(instance_labels, instance_idx), instance_labels, 0)
         num_instances_soft=len(instance_idx)
         class_ids = np.ones(num_instances_soft)  

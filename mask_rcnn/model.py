@@ -1160,25 +1160,22 @@ def load_image_gt(dataset, config, image_id, augment=False,
     """
     # Load image and mask
     image = dataset.load_image(image_id)
-    mask, class_ids = dataset.load_mask(image_id)
+    (instance_labels_soft, instance_idx), class_ids, full_mask = dataset.load_mask(image_id)
+
     shape = image.shape
-    image, window, scale, padding = utils.resize_image(
-        image,
-        min_dim=config.IMAGE_MIN_DIM,
-        max_dim=config.IMAGE_MAX_DIM,
-        padding=config.IMAGE_PADDING)
-    mask = utils.resize_mask(mask, scale, padding)
+    image, window, scale, padding = utils.resize_image(image)
+    instance_label_resized = utils.resize_mask(instance_labels_soft, scale, padding)
 
     # Random horizontal flips.
     if augment:
         if random.randint(0, 1):
             image = np.fliplr(image)
-            mask = np.fliplr(mask)
+            mask = np.fliplr(instance_label_resized)
 
     # Bounding boxes. Note that some boxes might be all zeros
     # if the corresponding mask got cropped out.
     # bbox: [num_instances, (y1, x1, y2, x2)]
-    bbox = utils.extract_bboxes(mask)
+    bbox = utils.extract_bboxes(instance_label_resized, instance_idx)
 
     # Active classes
     # Different datasets have different classes, so track the
@@ -1187,9 +1184,10 @@ def load_image_gt(dataset, config, image_id, augment=False,
     source_class_ids = dataset.source_class_ids[dataset.image_info[image_id]["source"]]
     active_class_ids[source_class_ids] = 1
 
+    mask = (instance_label_resized, instance_idx)
     # Resize masks to smaller size to reduce memory usage
     if use_mini_mask:
-        mask = utils.minimize_mask(bbox, mask, config.MINI_MASK_SHAPE)
+        mask = utils.minimize_mask(bbox, instance_label_resized, instance_idx, config.MINI_MASK_SHAPE)
 
     # Image meta data
     image_meta = compose_image_meta(image_id, shape, window, active_class_ids)

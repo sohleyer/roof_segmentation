@@ -372,7 +372,7 @@ def resize_image(image, min_dim=None, max_dim=None, padding=False):
     Take the upper left corner of a size 1024x1024 to be able to enter the network.
     """
     image_resized = image[:1024,:1024]
-    window=None
+    window=(0,0,0,0)
     scale=None
     padding=None 
     return image_resized, window, scale, padding
@@ -386,15 +386,15 @@ def resize_mask(mask, scale, padding):
     return mask_resized
 
 
-def minimize_mask(bbox, mask, mini_shape):
+def minimize_mask(bbox, instance_labels, instance_idx, mini_shape):
     """Resize masks to a smaller version to cut memory load.
     Mini-masks can then resized back to image scale using expand_masks()
 
     See inspect_data.ipynb notebook for more details.
     """
-    mini_mask = np.zeros(mini_shape + (mask.shape[-1],), dtype=bool)
-    for i in range(mask.shape[-1]):
-        m = mask[:, :, i]
+    mini_mask = np.zeros(mini_shape + (len(instance_idx),), dtype=bool)
+    for i, idx in enumerate(instance_idx):
+        m = (instance_labels==idx)
         y1, x1, y2, x2 = bbox[i][:4]
         m = m[y1:y2, x1:x2]
         if m.size == 0:
