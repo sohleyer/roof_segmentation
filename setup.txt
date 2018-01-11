@@ -76,3 +76,17 @@ http://gear.github.io/2017-03-30-caffe-gpu-installation/
 —————————————————————————
 cd InriaBenchmark
 python predict_folder_script.py
+
+
+
+#########
+AWS
+#########
+
+ssh -i ~/obj_reco.pem  ubuntu@ec2-34-230-1-102.compute-1.amazonaws.com
+
+scp -i ~/obj_reco.pem  ~/Documents/ENS\ MVA/Object\ recognition/mask_rcnn/code/model.py ubuntu@ec2-52-23-251-181.compute-1.amazonaws.com:~/
+
+scp -i ~/obj_reco.pem  ~/Documents/ENS\ MVA/Object\ recognition/mask_rcnn/code/* ubuntu@ec2-52-23-251-181.compute-1.amazonaws.com:~/mask_rcnn
+
+wget https://aerialimagedataset.s3.amazonaws.com/train
