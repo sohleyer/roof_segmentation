@@ -83,10 +83,39 @@ python predict_folder_script.py
 AWS
 #########
 
-ssh -i ~/obj_reco.pem  ubuntu@ec2-34-230-1-102.compute-1.amazonaws.com
+ssh -i ~/obj_reco.pem  ubuntu@ec2-54-166-182-238.compute-1.amazonaws.com
 
-scp -i ~/obj_reco.pem  ~/Documents/ENS\ MVA/Object\ recognition/mask_rcnn/code/model.py ubuntu@ec2-52-23-251-181.compute-1.amazonaws.com:~/
 
-scp -i ~/obj_reco.pem  ~/Documents/ENS\ MVA/Object\ recognition/mask_rcnn/code/* ubuntu@ec2-52-23-251-181.compute-1.amazonaws.com:~/mask_rcnn
+# Download one file from local to aws
+###########
+scp -i ~/obj_reco.pem  ~/Documents/ENS\ MVA/Object\ recognition/mask_rcnn/aws_code/model_train.py ubuntu@ec2-54-175-249-104.compute-1.amazonaws.com:~/mask_rcnn/code
 
-wget https://aerialimagedataset.s3.amazonaws.com/train
+
+# Download a directory from local to aws
+###########
+scp -i ~/obj_reco.pem  ~/Documents/ENS\ MVA/Object\ recognition/mask_rcnn/aws_code/* ubuntu@ec2-52-91-115-42.compute-1.amazonaws.com:~/mask_rcnn/code
+
+
+# Sync s3 dataset
+###########
+aws s3 sync s3://aerialimagedataset/train aerialimagedataset/train
+cd mask_rcnn
+rm -rf trained_model
+cd ..
+aws s3 sync s3://initializationweights mask_rcnn/trained_model
+
+
+# Jupyter on AWS 
+###########
+
+ssh -i ~/obj_reco.pem -L 8000:127.0.0.1:8000 ubuntu@ec2-54-166-182-238.compute-1.amazonaws.com #ouvre un pont entre les ports 8000 du mac et de l’instance
+
+screen #lance un second terminal en arrière plan
+jupyter notebook —-port 8000 #lance un jupyter notebook sur ce terminal
+
+dans le browser : 127.0.0.1:8000
+si mdp, cp/cl le token de l’adresse qui est dans le terminal
+
+pour quitter le screen : Ctrl+a puis d
+screen -ls #lister les screens en background
+screen -r 1111 #(les 4 premiers chiffres qui sont sortis du screen -ls

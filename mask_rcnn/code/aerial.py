@@ -85,12 +85,13 @@ class AerialConfig(Config):
 
 class AerialDataset(utils.Dataset):
 
-    def load_aerial(self, dataset_dir, subset, town_list=None, 
+    def load_aerial(self, dataset_dir, subset, subimage_list=[(0,0)], town_list=None, 
         image_per_town=None):
         """Load a subset of the AERIAL dataset.
         dataset_dir: The root directory of the AERIAL dataset.
         subset: What to load (train, val test)
         """
+        #self.subimage = subimage
         # Path
         if subset=="train":
             if town_list is None:
@@ -134,17 +135,29 @@ class AerialDataset(utils.Dataset):
 
         # Add images
         for i, name in enumerate(self.image_names):
-            self.add_image(
-                "aerial", image_id=i, image_name=name,
-                path=os.path.join(self.image_dir, name),
-                width=1024,
-                height=1024,
-                mask_path=os.path.join(self.mask_dir, name))
+            for subimage in subimage_list:
+                image_name_split = name.split(".")
+                new_name = ".".join([image_name_split[0]+'_'+str(subimage[0])+str(subimage[1]), image_name_split[1]])
+                self.add_image(
+                    "aerial", image_id=i, image_name=new_name,
+                    path=os.path.join(self.image_dir, name),
+                    width=1024,
+                    height=1024,
+                    mask_path=os.path.join(self.mask_dir, name),
+                    subimage=subimage)
 
     def load_image(self, image_id):
         info = self.image_info[image_id]
         path = info["path"]
-        image_read = imageio.imread(path)[:1024, :1024]
+        (subimx,subimy) = info['subimage']
+        if subimx<4 and subimy<4:
+            image_read = imageio.imread(path)[subimy*1024:(subimy+1)*1024, subimx*1024:(subimx+1)*1024]
+        elif subimx==4 and subimy!=4:
+            image_read = imageio.imread(path)[subimy*1024:(subimy+1)*1024, 3976:5000]
+        elif subimy==4 and subimx!=4:
+            image_read = imageio.imread(path)[3976:5000, subimx*1024:(subimx+1)*1024]
+        elif subimy==4 and subimx==4:
+            image_read = imageio.imread(path)[3976:5000, 3976:5000]
         return image_read
 
     def load_mask(self, image_id):
@@ -155,7 +168,16 @@ class AerialDataset(utils.Dataset):
         full_mask: Full original mask"""
         info = self.image_info[image_id]
         mask_path = info["mask_path"]
-        full_mask = imageio.imread(mask_path)[:1024, :1024]
+        (subimx,subimy) = info['subimage']
+        if subimx<4 and subimy<4:
+            full_mask = imageio.imread(mask_path)[subimy*1024:(subimy+1)*1024, subimx*1024:(subimx+1)*1024]
+        elif subimx==4 and subimy!=4:
+            full_mask = imageio.imread(mask_path)[subimy*1024:(subimy+1)*1024, 3976:5000]
+        elif subimy==4 and subimx!=4:
+            full_mask = imageio.imread(mask_path)[3976:5000, subimx*1024:(subimx+1)*1024]
+        elif subimy==4 and subimx==4:
+            full_mask = imageio.imread(mask_path)[3976:5000, 3976:5000]
+
 
         #create the mask matrix
         (instance_labels, num_instances) = label(full_mask, return_num =1, connectivity=2)

@@ -14,5 +14,7 @@ mask_rcnn/__pycache__/
 mask_rcnn/.ipynb_checkpoints/
 mask_rcnn/.floydexpt
 mask_rcnn/.floydignore
+mask_rcnn/aws_code/
+mask_rcnn/trained_model/
 
 mask_rcnn_output/
