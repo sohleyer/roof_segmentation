@@ -364,9 +364,10 @@ def resize_image(image, min_dim=None, max_dim=None, padding=False):
     """
     Take the upper left corner of a size 1024x1024 to be able to enter the network.
     """
-    window=(0,0,0,0)
-    scale=None
-    padding=None 
+    h, w = image.shape[:2]
+    window = (0, 0, h, w)
+    scale=1
+    padding=False
     return image, window, scale, padding
 
 
@@ -374,8 +375,8 @@ def resize_mask(mask, scale, padding):
     """
     Take the upper left corner of a size 1024x1024 to be able to enter the network.
     """
-    scale=None
-    padding=None
+    scale=1
+    padding=False
     return mask
 
 

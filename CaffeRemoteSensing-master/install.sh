@@ -43,7 +43,7 @@ ln -s /usr/lib/x86_64-linux-gnu/libhdf5_serial.so.10.1.0 /usr/lib/x86_64-linux-g
 
 echo "Verify Makefile.config"
 echo "####################################"
-# USE_CPU and OPEN_CV
+# USE_CPU and OPEN_CV 3
 vi Makefile.config.example
 cp Makefile.config.example Makefile.config
 

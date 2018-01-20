@@ -53,7 +53,8 @@ floyd data upload #will create a new version of the dataset
 # run CaffeRemoteSensing
 —————————————————————————
 cd CaffeRemoteSensing-master
-floyd run --data sohleyer/datasets/aerialimagedataset_train/1:/train --env caffe:py2 --mode jupyter #will create a new job with Python 2.7 and caffe2
+floyd run --data sohleyer/datasets/aerialimagedataset_train/1:/train --env caffe:py2 --mode jupyter 
+#will create a new job with Python 2.7 and caffe2
 
 
 # compile caffe version of the author
@@ -61,6 +62,7 @@ floyd run --data sohleyer/datasets/aerialimagedataset_train/1:/train --env caffe
 cp Makefile.config.example Makefile.config
 # Adjust Makefile.config (for example, if using Anaconda Python, or if cuDNN is desired)
 # For me : CPU_ONLY=1
+vi Makefile.config
 make all
 make test
 make runtest
@@ -79,26 +81,41 @@ python predict_folder_script.py
 
 
 
-#########
-AWS
-#########
+#################
+#   AWS runs    #
+#################
 
-ssh -i ~/obj_reco.pem  ubuntu@ec2-54-166-182-238.compute-1.amazonaws.com
+ssh -i ~/obj_reco.pem  ubuntu@ec2-184-72-117-132.compute-1.amazonaws.com
 
 
-# Download one file from local to aws
-###########
+
+# Download one file from LOCAL to AWS
+------------------------
 scp -i ~/obj_reco.pem  ~/Documents/ENS\ MVA/Object\ recognition/mask_rcnn/aws_code/model_train.py ubuntu@ec2-54-175-249-104.compute-1.amazonaws.com:~/mask_rcnn/code
 
+# Download a directory from LOCAL to AWS
+------------------------
+scp -i ~/obj_reco.pem  ~/Documents/ENS\ MVA/Object\ recognition/mask_rcnn/aws_code/* ubuntu@ec2-107-23-254-190.compute-1.amazonaws.com:~/mask_rcnn/code_test
 
-# Download a directory from local to aws
-###########
-scp -i ~/obj_reco.pem  ~/Documents/ENS\ MVA/Object\ recognition/mask_rcnn/aws_code/* ubuntu@ec2-52-91-115-42.compute-1.amazonaws.com:~/mask_rcnn/code
+# Download one file from AWS to LOCAL
+------------------------
+scp -i ~/obj_reco.pem  ubuntu@ec2-34-207-68-77.compute-1.amazonaws.com:~/mask_rcnn/predictions2/austin10.tif ~/Documents
+
+# Download a directory from AWS to LOCAL
+------------------------
+scp -i ~/obj_reco.pem -r ubuntu@ec2-34-207-68-77.compute-1.amazonaws.com:~/mask_rcnn/predictions2 ~/Documents
+
+
+
+# Copy weight to the trained_model
+------------------------
+cp mask_rcnn_aerial_0010.h5 /home/ubuntu/mask_rcnn/trained_model/11_mask_rcnn_aerial_0010.h5
 
 
 # Sync s3 dataset
-###########
-aws s3 sync s3://aerialimagedataset/train aerialimagedataset/train
+------------------------
+aws s3 sync s3://aerialimagedataset/test aerialimagedataset/test
+
 cd mask_rcnn
 rm -rf trained_model
 cd ..
@@ -106,16 +123,29 @@ aws s3 sync s3://initializationweights mask_rcnn/trained_model
 
 
 # Jupyter on AWS 
-###########
+------------------------
 
-ssh -i ~/obj_reco.pem -L 8000:127.0.0.1:8000 ubuntu@ec2-54-166-182-238.compute-1.amazonaws.com #ouvre un pont entre les ports 8000 du mac et de l’instance
+# ouvre un pont entre les ports 8000 du mac et de l’instance
+ssh -i ~/obj_reco.pem -L 8000:127.0.0.1:8000 ubuntu@ec2-184-72-117-132.compute-1.amazonaws.com
 
+# lance un jupyter notebook sur ce terminal
 screen #lance un second terminal en arrière plan
-jupyter notebook —-port 8000 #lance un jupyter notebook sur ce terminal
+jupyter notebook —-port 8000 
 
-dans le browser : 127.0.0.1:8000
-si mdp, cp/cl le token de l’adresse qui est dans le terminal
+# dans le browser : 127.0.0.1:8000
+# si mdp, cp/cl le token de l’adresse qui est dans le terminal
 
 pour quitter le screen : Ctrl+a puis d
 screen -ls #lister les screens en background
 screen -r 1111 #(les 4 premiers chiffres qui sont sortis du screen -ls
+
+
+# Tensorboard on AWS
+-----------------------
+ssh -i ~/obj_reco.pem -L 7000:127.0.0.1:7000 ubuntu@ec2-107-23-254-190.compute-1.amazonaws.com
+
+
+# Know directory weight ?
+------------------------
+cd in the directory
+du -hs

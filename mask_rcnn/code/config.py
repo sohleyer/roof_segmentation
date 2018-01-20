@@ -41,12 +41,12 @@ class Config(object):
     # Validation stats are also calculated at each epoch end and they
     # might take a while, so don't set this too small to avoid spending
     # a lot of time on validation stats.
-    STEPS_PER_EPOCH = 450
+    STEPS_PER_EPOCH = 90
 
     # Number of validation steps to run at the end of every training epoch.
     # A bigger number improves accuracy of validation stats, but slows
     # down the training.
-    VALIDATION_STEPS = 50
+    VALIDATION_STEPS = 20
 
     # The strides of each layer of the FPN Pyramid. These values
     # are based on a Resnet101 backbone.
@@ -81,7 +81,7 @@ class Config(object):
     # If enabled, resizes instance masks to a smaller size to reduce
     # memory load. Recommended when using high-resolution images.
     USE_MINI_MASK = True
-    MINI_MASK_SHAPE = (256,256)  # (height, width) of the mini-mask
+    MINI_MASK_SHAPE = (128,128)  # (height, width) of the mini-mask
 
     # Input image resing
     # Images are resized such that the smallest side is >= IMAGE_MIN_DIM and

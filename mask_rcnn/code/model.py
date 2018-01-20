@@ -1912,13 +1912,15 @@ class MaskRCNN():
             model = KM.Model(inputs, outputs, name='mask_rcnn')
         else:
             # Network Heads
-            # Proposal classifier and BBox regressor heads
+            # Proposal classifier and BBox regressor heads 
+            # OUTPUT TENSOR OBJECTS
             mrcnn_class_logits, mrcnn_class, mrcnn_bbox =\
                 fpn_classifier_graph(rpn_rois, mrcnn_feature_maps, config.IMAGE_SHAPE,
                                      config.POOL_SIZE, config.NUM_CLASSES)
 
             # Detections
             # output is [batch, num_detections, (y1, x1, y2, x2, class_id, score)] in image coordinates
+            # TENSOR OBJECT
             detections = DetectionLayer(config, name="mrcnn_detection")(
                 [rpn_rois, mrcnn_class, mrcnn_bbox, input_image_meta])
 

@@ -118,28 +118,36 @@ class AerialDataset(utils.Dataset):
                 image_per_town=31
             self.image_dir = os.path.join(dataset_dir, "train/images")
             self.mask_dir = os.path.join(dataset_dir, "train/gt")
+
+        elif subset=="mlp_pred" or subset=="fcn_pred":
+            self.image_dir = os.path.join(dataset_dir, "train/images")
+            self.mask_dir = os.path.join(dataset_dir, "train/"+subset)
         
 
         # Add classes
         self.add_class("aerial", 1, "building")
 
         # All images or a subset?
-        self.image_names = []
-        for town in town_list:
-            j=first_image
-            while j<=first_image+(image_per_town-1):
-                file = town+str(j)+".tif"
-                if file in os.listdir(self.image_dir):
-                    self.image_names.append(file)
-                    j+=1
+        if subset=="train" or subset=="test" or subset=="val":
+            self.image_names = []
+            for town in town_list:
+                j=first_image
+                while j<=first_image+(image_per_town-1):
+                    file = town+str(j)+".tif"
+                    if file in os.listdir(self.image_dir):
+                        self.image_names.append(file)
+                        j+=1
+        elif subset=="mlp_pred" or subset=="fcn_pred":
+            self.image_names = ["austin14.tif", "vienna33.tif", "tyrol-w29.tif", "chicago1.tif", "chicago5.tif"]
 
         # Add images
         for i, name in enumerate(self.image_names):
             for subimage in subimage_list:
                 image_name_split = name.split(".")
                 new_name = ".".join([image_name_split[0]+'_'+str(subimage[0])+str(subimage[1]), image_name_split[1]])
+                image_id = int(str(i+1)+str(subimage[0])+str(subimage[1]))
                 self.add_image(
-                    "aerial", image_id=i, image_name=new_name,
+                    "aerial", image_id=image_id, image_name=new_name,
                     path=os.path.join(self.image_dir, name),
                     width=1024,
                     height=1024,
