@@ -85,7 +85,7 @@ python predict_folder_script.py
 #   AWS runs    #
 #################
 
-ssh -i ~/obj_reco.pem  ubuntu@ec2-184-72-117-132.compute-1.amazonaws.com
+ssh -i ~/obj_reco.pem  ubuntu@ec2-54-89-87-245.compute-1.amazonaws.com
 
 
 
@@ -99,11 +99,11 @@ scp -i ~/obj_reco.pem  ~/Documents/ENS\ MVA/Object\ recognition/mask_rcnn/aws_co
 
 # Download one file from AWS to LOCAL
 ------------------------
-scp -i ~/obj_reco.pem  ubuntu@ec2-34-207-68-77.compute-1.amazonaws.com:~/mask_rcnn/predictions2/austin10.tif ~/Documents
+scp -i ~/obj_reco.pem  ubuntu@ec2-54-236-221-32.compute-1.amazonaws.com:~/mask_rcnn/code_test/generate_detection.ipynb ~/Documents
 
 # Download a directory from AWS to LOCAL
 ------------------------
-scp -i ~/obj_reco.pem -r ubuntu@ec2-34-207-68-77.compute-1.amazonaws.com:~/mask_rcnn/predictions2 ~/Documents
+scp -i ~/obj_reco.pem -r ubuntu@ec2-34-238-117-6.compute-1.amazonaws.com:~/mask_rcnn/predictions ~/Documents
 
 
 
@@ -114,7 +114,7 @@ cp mask_rcnn_aerial_0010.h5 /home/ubuntu/mask_rcnn/trained_model/11_mask_rcnn_ae
 
 # Sync s3 dataset
 ------------------------
-aws s3 sync s3://aerialimagedataset/test aerialimagedataset/test
+aws s3 sync s3://aerialimagedataset/train aerialimagedataset/train
 
 cd mask_rcnn
 rm -rf trained_model
@@ -126,7 +126,7 @@ aws s3 sync s3://initializationweights mask_rcnn/trained_model
 ------------------------
 
 # ouvre un pont entre les ports 8000 du mac et de l’instance
-ssh -i ~/obj_reco.pem -L 8000:127.0.0.1:8000 ubuntu@ec2-184-72-117-132.compute-1.amazonaws.com
+ssh -i ~/obj_reco.pem -L 8000:127.0.0.1:8000 ubuntu@ec2-54-89-87-245.compute-1.amazonaws.com
 
 # lance un jupyter notebook sur ce terminal
 screen #lance un second terminal en arrière plan

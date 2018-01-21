@@ -10,11 +10,16 @@ Mask_RCNN-shapes/__pycache__/
 Mask_RCNN-shapes/data/
 Mask_RCNN-shapes/ipynb_checkpoints/
 
-mask_rcnn/__pycache__/
-mask_rcnn/.ipynb_checkpoints/
+mask_rcnn/code/__pycache__/
+mask_rcnn/code/.ipynb_checkpoints/*
 mask_rcnn/.floydexpt
 mask_rcnn/.floydignore
 mask_rcnn/aws_code/
 mask_rcnn/trained_model/
+mask_rcnn/.ipynb_checkpoints/
+mask_rcnn/__pycache__/
 
 mask_rcnn_output/
+
+*.csv
+*.eps

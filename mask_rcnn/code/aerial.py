@@ -109,6 +109,7 @@ class AerialDataset(utils.Dataset):
             if image_per_town is None:
                 image_per_town=36
             self.image_dir = os.path.join(dataset_dir, "test/images")
+            self.mask_dir = ""
         
         elif subset=="val":
             if town_list is None:
@@ -119,7 +120,12 @@ class AerialDataset(utils.Dataset):
             self.image_dir = os.path.join(dataset_dir, "train/images")
             self.mask_dir = os.path.join(dataset_dir, "train/gt")
 
-        elif subset=="mlp_pred" or subset=="fcn_pred":
+        elif subset=="mlp" or subset=="fcn":
+            if town_list is None:
+                town_list = ["austin", "chicago", "kitsap", "tyrol-w", "vienna"]
+            first_image = 1
+            if image_per_town is None:
+                image_per_town=36
             self.image_dir = os.path.join(dataset_dir, "train/images")
             self.mask_dir = os.path.join(dataset_dir, "train/"+subset)
         
@@ -128,17 +134,15 @@ class AerialDataset(utils.Dataset):
         self.add_class("aerial", 1, "building")
 
         # All images or a subset?
-        if subset=="train" or subset=="test" or subset=="val":
-            self.image_names = []
-            for town in town_list:
-                j=first_image
-                while j<=first_image+(image_per_town-1):
-                    file = town+str(j)+".tif"
-                    if file in os.listdir(self.image_dir):
-                        self.image_names.append(file)
-                        j+=1
-        elif subset=="mlp_pred" or subset=="fcn_pred":
-            self.image_names = ["austin14.tif", "vienna33.tif", "tyrol-w29.tif", "chicago1.tif", "chicago5.tif"]
+        
+        self.image_names = []
+        for town in town_list:
+            j=first_image
+            while j<=first_image+(image_per_town-1):
+                file = town+str(j)+".tif"
+                if file in os.listdir(self.image_dir):
+                    self.image_names.append(file)
+                    j+=1
 
         # Add images
         for i, name in enumerate(self.image_names):
@@ -151,7 +155,7 @@ class AerialDataset(utils.Dataset):
                     path=os.path.join(self.image_dir, name),
                     width=1024,
                     height=1024,
-                    mask_path=os.path.join(self.mask_dir, name),
+                    mask_path=os.path.join(self.mask_dir, name)*(1-(subset=="test")),
                     subimage=subimage)
 
     def load_image(self, image_id):
