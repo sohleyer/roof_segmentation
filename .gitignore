@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 AerialImageDataset/
 
 Mask_RCNN-coco/assets/
@@ -24,10 +23,3 @@ mask_rcnn_output/
 
 *.csv
 *.eps
-=======
-./AerialImageDataset
-
-./Mask_RCNN-coco/assets
-./Mask_RCNN-coco/coco
-./Mask_RCNN-coco/images
->>>>>>> master
