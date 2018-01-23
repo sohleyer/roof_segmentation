@@ -15,7 +15,7 @@ net_config_location = "config/mlp.prototxt"
 
 # Images to predict
 image_folder = '/train/images/'
-top_n_images = 2 #how many images to predict
+top_n_images = None #how many images to predict
 
 # Output
 output_prefix = '/output/'
