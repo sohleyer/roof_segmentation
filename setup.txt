@@ -1,0 +1,151 @@
+########################################### 
+#                                         #
+#  OBJECT RECOGNITION PROJECT : settings  #
+#                                         #
+###########################################
+
+
+# Create a Python 3 environment :
+conda create -n objreco_namr python=3.6
+
+# Install packages
+tensorflow
+Cython
+nbconvert #to be able to change kernel in jupyter notebook
+ipykernel
+scikit-learn
+scikit-image
+h5py
+imageio
+
+brew install opencv (for v2 : brew install opencv@2)
+cd ~/anaconda3/envs/objreco_namr/lib/python3.6/site-packages
+ln -s /usr/local/opt/opencv@3/lib/python3.6/site-packages/cv2.so cv2.so
+to test if it work : ipython then import cv2
+(link https://www.pyimagesearch.com/2016/12/19/install-opencv-3-on-macos-with-homebrew-the-easy-way/ or https://www.learnopencv.com/install-opencv3-on-macos/)
+
+
+# Install coco
+cd coco/PythonAPI/
+python setup.py build_ext install
+
+
+#################
+# Floydhub runs #
+#################
+
+
+# run on floydhub (website example)
+—————————————————————————
+floyd login
+cd <code_folder>
+floyd init <project_name>
+floyd run --gpu --mode jupyter --env tensorflow-1.3
+
+
+# create a floyd dataset
+—————————————————————————
+create a data directory and cd in it
+floyd data init <dataset_name>
+floyd data upload #will create a new version of the dataset
+
+
+# run CaffeRemoteSensing
+—————————————————————————
+cd CaffeRemoteSensing-master
+floyd run --data sohleyer/datasets/aerialimagedataset_train/1:/train --env caffe:py2 --mode jupyter 
+#will create a new job with Python 2.7 and caffe2
+
+
+# compile caffe version of the author
+—————————————————————————
+cp Makefile.config.example Makefile.config
+# Adjust Makefile.config (for example, if using Anaconda Python, or if cuDNN is desired)
+# For me : CPU_ONLY=1
+vi Makefile.config
+make all
+make test
+make runtest
+
+
+https://chunml.github.io/ChunML.github.io/project/Installing-Caffe-CPU-Only/
+https://github.com/intel/caffe/wiki/Ubuntu-16.04-or-15.10-Installation-Guide
+https://github.com/nvidia/digits/issues/1107
+http://gear.github.io/2017-03-30-caffe-gpu-installation/
+
+
+# run python
+—————————————————————————
+cd InriaBenchmark
+python predict_folder_script.py
+
+
+
+#################
+#   AWS runs    #
+#################
+
+ssh -i ~/obj_reco.pem  ubuntu@ec2-54-89-87-245.compute-1.amazonaws.com
+
+
+
+# Download one file from LOCAL to AWS
+------------------------
+scp -i ~/obj_reco.pem  ~/Documents/ENS\ MVA/Object\ recognition/mask_rcnn/aws_code/model_train.py ubuntu@ec2-54-175-249-104.compute-1.amazonaws.com:~/mask_rcnn/code
+
+# Download a directory from LOCAL to AWS
+------------------------
+scp -i ~/obj_reco.pem  ~/Documents/ENS\ MVA/Object\ recognition/mask_rcnn/aws_code/* ubuntu@ec2-107-23-254-190.compute-1.amazonaws.com:~/mask_rcnn/code_test
+
+# Download one file from AWS to LOCAL
+------------------------
+scp -i ~/obj_reco.pem  ubuntu@ec2-54-236-221-32.compute-1.amazonaws.com:~/mask_rcnn/code_test/generate_detection.ipynb ~/Documents
+
+# Download a directory from AWS to LOCAL
+------------------------
+scp -i ~/obj_reco.pem -r ubuntu@ec2-34-238-117-6.compute-1.amazonaws.com:~/mask_rcnn/predictions ~/Documents
+
+
+
+# Copy weight to the trained_model
+------------------------
+cp mask_rcnn_aerial_0010.h5 /home/ubuntu/mask_rcnn/trained_model/11_mask_rcnn_aerial_0010.h5
+
+
+# Sync s3 dataset
+------------------------
+aws s3 sync s3://aerialimagedataset/train aerialimagedataset/train
+
+cd mask_rcnn
+rm -rf trained_model
+cd ..
+aws s3 sync s3://initializationweights mask_rcnn/trained_model
+
+
+# Jupyter on AWS 
+------------------------
+
+# ouvre un pont entre les ports 8000 du mac et de l’instance
+ssh -i ~/obj_reco.pem -L 8000:127.0.0.1:8000 ubuntu@ec2-54-89-87-245.compute-1.amazonaws.com
+
+# lance un jupyter notebook sur ce terminal
+screen #lance un second terminal en arrière plan
+jupyter notebook —-port 8000 
+
+# dans le browser : 127.0.0.1:8000
+# si mdp, cp/cl le token de l’adresse qui est dans le terminal
+
+pour quitter le screen : Ctrl+a puis d
+screen -ls #lister les screens en background
+screen -r 1111 #(les 4 premiers chiffres qui sont sortis du screen -ls
+
+
+# Tensorboard on AWS
+-----------------------
+ssh -i ~/obj_reco.pem -L 7000:127.0.0.1:7000 ubuntu@ec2-107-23-254-190.compute-1.amazonaws.com
+
+
+# Know directory weight ?
+------------------------
+cd in the directory
+du -hs
