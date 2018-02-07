@@ -85,9 +85,8 @@ def classify(net_config_location, net_weights, image_location, alpha_channel, us
 
 
 	net = caffe.Net('temp.prototxt', net_weights, caffe.TEST)
-	print 'Image location : ' + image_location
 	# Open image
-	print 'Opening image...'
+	print 'Opening image...'+image_location
 	in_ = getimage(image_location,alpha_channel)
 	print 'Image opened...'
 
